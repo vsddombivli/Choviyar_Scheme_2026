@@ -114,6 +114,63 @@
   }
   .download-btn:disabled { opacity: 0.4; cursor: not-allowed; }
   #fileInput, #fileInput2 { display: none; }
+
+  .celebrate-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 6, 30, 0.88);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    z-index: 999;
+    overflow: hidden;
+  }
+  .celebrate-overlay.show { display: flex; }
+  .confetti-layer {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .confetti-piece {
+    position: absolute;
+    top: -20px;
+    width: 9px;
+    height: 14px;
+    opacity: 0.95;
+    animation-name: confetti-fall;
+    animation-timing-function: ease-in;
+    animation-fill-mode: forwards;
+  }
+  @keyframes confetti-fall {
+    0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(105vh) rotate(540deg); opacity: 0.9; }
+  }
+  .thank-you {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    font-size: 26px;
+    font-weight: bold;
+    color: #ffcc33;
+    text-shadow: 0 3px 10px rgba(0,0,0,0.6);
+    opacity: 0;
+    transform: scale(0.85);
+    animation: pop-in 0.4s ease-out forwards;
+  }
+  .thank-you span {
+    display: block;
+    margin-top: 10px;
+    font-size: 15px;
+    font-weight: normal;
+    color: #fff;
+    opacity: 0.9;
+  }
+  @keyframes pop-in {
+    0%   { opacity: 0; transform: scale(0.7); }
+    60%  { opacity: 1; transform: scale(1.08); }
+    100% { opacity: 1; transform: scale(1); }
+  }
 </style>
 </head>
 <body>
@@ -141,6 +198,14 @@
 
 <input type="file" id="fileInput" accept="image/*">
 <input type="file" id="fileInput2" accept="image/*">
+
+<div id="celebrateOverlay" class="celebrate-overlay">
+  <div id="confettiLayer" class="confetti-layer"></div>
+  <div class="thank-you">
+    🎉 Thank You! 🎉
+    <span>Photo uploaded successfully</span>
+  </div>
+</div>
 
 <script>
 const canvas = document.getElementById('cardCanvas');
@@ -218,11 +283,40 @@ function loadPhotoFile(file) {
       offX = 0; offY = 0;
       downloadBtn.disabled = false;
       drawCard();
-      showPage2();
+      celebrate();
     };
     img.src = ev.target.result;
   };
   reader.readAsDataURL(file);
+}
+
+const celebrateOverlay = document.getElementById('celebrateOverlay');
+const confettiLayer = document.getElementById('confettiLayer');
+const CONFETTI_COLORS = ['#ffcc33', '#ff9933', '#ff5e78', '#33d6a6', '#5eb1ff', '#ffffff'];
+
+function spawnConfetti() {
+  confettiLayer.innerHTML = '';
+  const count = 40;
+  for (let i = 0; i < count; i++) {
+    const piece = document.createElement('div');
+    piece.className = 'confetti-piece';
+    piece.style.left = Math.random() * 100 + '%';
+    piece.style.background = CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)];
+    piece.style.animationDuration = (1.6 + Math.random() * 1.2) + 's';
+    piece.style.animationDelay = (Math.random() * 0.4) + 's';
+    piece.style.transform = `rotate(${Math.random() * 360}deg)`;
+    confettiLayer.appendChild(piece);
+  }
+}
+
+function celebrate() {
+  spawnConfetti();
+  celebrateOverlay.classList.add('show');
+  setTimeout(() => {
+    celebrateOverlay.classList.remove('show');
+    confettiLayer.innerHTML = '';
+    showPage2();
+  }, 1800);
 }
 
 fileInput.addEventListener('change', (e) => loadPhotoFile(e.target.files[0]));
