@@ -71,6 +71,59 @@
     cursor: grab;
   }
   .frame-overlay:active { cursor: grabbing; }
+
+  .tutorial-overlay {
+    position: absolute;
+    left: 14.72%;
+    top: 11.09%;
+    width: 75.14%;
+    height: 28.83%;
+    background: rgba(10, 6, 30, 0.72);
+    border-radius: 14px;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6%;
+    z-index: 5;
+    text-align: center;
+  }
+  .tutorial-overlay.show { display: flex; }
+  .tut-hint {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .tut-icon {
+    font-size: 8vw;
+    display: inline-block;
+  }
+  .tut-drag .tut-icon { animation: tut-drag-move 1.6s ease-in-out infinite; }
+  .tut-pinch .tut-icon { animation: tut-pinch-move 1.4s ease-in-out infinite; }
+  @keyframes tut-drag-move {
+    0%, 100% { transform: translateX(-14px); }
+    50% { transform: translateX(14px); }
+  }
+  @keyframes tut-pinch-move {
+    0%, 100% { transform: scale(0.85); }
+    50% { transform: scale(1.25); }
+  }
+  .tut-label {
+    font-size: 12px;
+    color: #ffcc33;
+    font-weight: bold;
+    margin-top: 2px;
+  }
+  .tut-dismiss {
+    background: #ffcc33;
+    color: #2a1a4a;
+    border: none;
+    padding: 6px 18px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 12px;
+    cursor: pointer;
+  }
   .btn-row {
     display: flex;
     gap: 12px;
@@ -187,6 +240,17 @@
     <div class="canvas-wrap">
       <canvas id="cardCanvas" width="720" height="1280"></canvas>
       <div class="frame-overlay" id="frameOverlay"></div>
+      <div class="tutorial-overlay" id="tutorialOverlay">
+        <div class="tut-hint tut-drag">
+          <span class="tut-icon">👆</span>
+          <span class="tut-label">Drag to move</span>
+        </div>
+        <div class="tut-hint tut-pinch">
+          <span class="tut-icon">🤏</span>
+          <span class="tut-label">Pinch to zoom</span>
+        </div>
+        <button class="tut-dismiss" id="tutDismiss">Got it!</button>
+      </div>
     </div>
     <div class="hint">Drag photo to move · pinch/scroll to zoom</div>
     <div class="btn-row">
@@ -316,8 +380,25 @@ function celebrate() {
     celebrateOverlay.classList.remove('show');
     confettiLayer.innerHTML = '';
     showPage2();
+    maybeShowTutorial();
   }, 1800);
 }
+
+const tutorialOverlay = document.getElementById('tutorialOverlay');
+const tutDismiss = document.getElementById('tutDismiss');
+let tutorialShown = false;
+
+function hideTutorial() { tutorialOverlay.classList.remove('show'); }
+
+function maybeShowTutorial() {
+  if (tutorialShown) return;
+  tutorialShown = true;
+  tutorialOverlay.classList.add('show');
+  setTimeout(hideTutorial, 4000);
+}
+
+tutDismiss.addEventListener('click', (e) => { e.stopPropagation(); hideTutorial(); });
+tutorialOverlay.addEventListener('click', hideTutorial);
 
 fileInput.addEventListener('change', (e) => loadPhotoFile(e.target.files[0]));
 fileInput2.addEventListener('change', (e) => loadPhotoFile(e.target.files[0]));
